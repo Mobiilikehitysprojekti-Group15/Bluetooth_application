@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
         if (bluetoothAdapter == null) {
             // Device doesn't support Bluetooth
         }
+        //Tämä osaa hoitaa BT käynnistyksen jos tarvii
         if (bluetoothAdapter?.isEnabled == false) {
             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             val enableDiscovery = Intent(BluetoothAdapter.ACTION_DISCOVERY_STARTED)
@@ -43,6 +44,8 @@ class MainActivity : AppCompatActivity() {
 
         }
 
+       //Tämä tulostaa puhelimeen kytkettynä olleet ns muistissa olevat laitteet
+        //On kommentoituna testaamista varten
 
         /* val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
          pairedDevices?.forEach { device ->
@@ -52,6 +55,8 @@ class MainActivity : AppCompatActivity() {
          */
 
     }
+
+    //Tästä alaspäin ei toimi vielä mikään
     private val receiver = object : BroadcastReceiver() {
 
         override fun onReceive(context: Context, intent: Intent) {
