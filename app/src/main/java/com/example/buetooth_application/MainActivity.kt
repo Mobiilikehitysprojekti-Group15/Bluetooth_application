@@ -1,86 +1,69 @@
 package com.example.buetooth_application
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothAdapter.ACTION_DISCOVERY_STARTED
-import android.bluetooth.BluetoothAdapter.STATE_ON
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothDevice.ACTION_FOUND
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
-import android.util.Log
+import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.Toast
+import java.nio.channels.InterruptedByTimeoutException
 
 
 class MainActivity : AppCompatActivity() {
 
+    //SupresLint for disabling premissin check for bluetothAdapter. Is a part of uppdate
+    @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
+        setContentView(R.layout.activity_main)
         val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
-        bluetoothAdapter!!.startDiscovery()
         val tvDevice: TextView = findViewById(R.id.tvDevice)
-        val filter = IntentFilter(BluetoothDevice.ACTION_FOUND)
-        registerReceiver(receiver, filter)
+
 
         if (bluetoothAdapter == null) {
-            // Device doesn't support Bluetooth
+            val toast = Toast.makeText(applicationContext,
+                "Your device does not support bluetooth",
+                Toast.LENGTH_LONG)
+            toast.show()
         }
-        //Tämä osaa hoitaa BT käynnistyksen jos tarvii
-        if (bluetoothAdapter?.isEnabled == false) {
-            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            val enableDiscovery = Intent(BluetoothAdapter.ACTION_DISCOVERY_STARTED)
-            var REQUEST_ENABLE_BT = 0
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
-            //startActivityForResult(enableDiscovery, STATE_ON)
-        }
-        if(bluetoothAdapter?.isDiscovering == false){
-            val intent = Intent(Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE))
+
+        //This commented section is for turning bluetooth on automaticly, but in this demo we don't use it
+        //Lets turn bluetooth on if it is turned off
+        //if (bluetoothAdapter?.isEnabled == false) {
+        //   val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+        //    var REQUEST_ENABLE_BT = 0
+         //   startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
+       // }
+
+        // Button to refresh the view
+        val bu_refresh = findViewById(R.id.bu_refresh) as Button
+
+        bu_refresh.setOnClickListener{
+            recreate()
 
         }
 
-       //Tämä tulostaa puhelimeen kytkettynä olleet ns muistissa olevat laitteet
-        //On kommentoituna testaamista varten
+        val bu_on = findViewById(R.id.bu_on) as Button
 
-        /* val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
+        bu_on.setOnClickListener{
+            bluetoothAdapter?.enable()
+        }
+        val bu_off = findViewById(R.id.bu_off) as Button
+
+        bu_off.setOnClickListener{
+            bluetoothAdapter?.disable()
+        }
+
+       //Let's print previously paired devices to textView
+         val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
          pairedDevices?.forEach { device ->
              val deviceName = device.name
              val deviceHardwareAddress = device.address // MAC address
              tvDevice.append("\n $deviceName, $deviceHardwareAddress")
-         */
-
-    }
-
-    //Tästä alaspäin ei toimi vielä mikään
-    private val receiver = object : BroadcastReceiver() {
-
-        override fun onReceive(context: Context, intent: Intent) {
-            val action: String = intent.action!!
-            when(action) {
-                BluetoothDevice.ACTION_FOUND -> {
-                    // Discovery has found a device. Get the BluetoothDevice
-                    // object and its info from the Intent.
-                    val device: BluetoothDevice =
-                        intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)!!
-                    val deviceName = device.name
-                    val deviceHardwareAddress = device.address // MAC address
-                    val tvDevice: TextView = findViewById(R.id.tvDevice)
-                    tvDevice.append("\n $deviceName $deviceHardwareAddress")
-                }
-            }
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        // Don't forget to unregister the ACTION_FOUND receiver.
-        unregisterReceiver(receiver)
-
+         }
     }
 }
